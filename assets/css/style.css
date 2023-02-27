@@ -1,0 +1,6 @@
+body {
+    background-image: url('../bgct.jpg') !important;
+    background-repeat: no-repeat !important;
+    background-attachment: fixed !important;
+    background-size: cover !important;
+}
