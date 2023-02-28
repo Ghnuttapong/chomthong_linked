@@ -49,7 +49,7 @@ $agencies_arr = $conn->select_join('agencies', 'users', ['agencies.*', 'users.*'
                     <div class="card-header p-0 border-bottom-0">
                         <ul class="nav nav-tabs" id="custom-tabs-four-tab" role="tablist">
                             <li class="nav-item">
-                                <a class="nav-link active" id="student-two-tab" data-toggle="pill" href="#student-two" role="tab" aria-controls="student-two" aria-selected="true">นักเรียนใหม่</a> 
+                                <a class="nav-link active" id="student-two-tab" data-toggle="pill" href="#student-two" role="tab" aria-controls="student-two" aria-selected="true">นักเรียนใหม่</a>
                             </li>
                             <li class="nav-item">
                                 <a class="nav-link" id="agency-two-tab" data-toggle="pill" href="#agency-two" role="tab" aria-controls="agency-two" aria-selected="false">หน่วยงาน</a>
@@ -94,7 +94,9 @@ $agencies_arr = $conn->select_join('agencies', 'users', ['agencies.*', 'users.*'
                                                                     <?= $students_arr[$i]['degree'] ?>
                                                                 </td>
                                                                 <td>
-                                                                    <button onclick="approve(this)" data-id="<?= $students_arr[$i]['id'] ?>" class="btn btn-secondary btn-sm rounded-0 w-100">อนุมัติ</button>
+                                                                    <div class="text-center">
+                                                                        <button onclick="approve(this)" data-id="<?= $students_arr[$i]['id'] ?>" class="btn btn-secondary btn-sm rounded-0"><i class="fas fa-check"></i></button>
+                                                                    </div>
                                                                 </td>
                                                             </tr>
                                                         <?php } ?>
@@ -141,7 +143,9 @@ $agencies_arr = $conn->select_join('agencies', 'users', ['agencies.*', 'users.*'
                                                                     <?= $agencies_arr[$i]['address'] ?>
                                                                 </td>
                                                                 <td>
-                                                                    <button onclick="approve(this)" data-id="<?= $agencies_arr[$i]['id'] ?>" class="btn btn-secondary btn-sm rounded-0 w-100">อนุมัติ</button>
+                                                                    <div class="text-center">
+                                                                        <button onclick="approve(this)" data-id="<?= $agencies_arr[$i]['id'] ?>" class="btn btn-secondary btn-sm rounded-0"><i class="fas fa-check"></i></button>
+                                                                    </div>
                                                                 </td>
                                                             </tr>
                                                         <?php } ?>
@@ -188,14 +192,12 @@ $agencies_arr = $conn->select_join('agencies', 'users', ['agencies.*', 'users.*'
                 data: {
                     id: data
                 },
-                success: function(res) {
-                    Toast.fire({
+                success: async function(res) {
+                    await Toast.fire({
                         icon: 'success',
                         title: res.msg
                     })
-                    setInterval(function() {
-                        window.location.reload()
-                    }, 500)
+                    await window.location.reload()
                 },
                 error: function(xhr, status, error) {
                     let err = eval(xhr.responseJSON);

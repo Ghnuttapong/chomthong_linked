@@ -1,17 +1,19 @@
 <?php
-include "../api/db.php";
-include dirname(__FILE__) . '/layouts/isagency.php';
+include './layouts/isagency.php';
+include '../api/db.php';
 $conn = new db();
-$data = $conn->select_fetch('users', ['*'], ['id'], [$_SESSION['user_id']]);
+$data = $conn->select_belong('users', 'agencies', 'users.*, agencies.*', 'users.id = agencies.user_id', ['users.id'], [$_SESSION['user_id']]);
+
 ?>
 <!DOCTYPE html>
 <html lang="en">
 
 <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <?php include './layouts/css.php' ?>
-    <title><?= $site_name ?> | เปลี่ยนรหัสผ่าน</title>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <?php include dirname(__FILE__) . '/layouts/css.php'; ?>
+    <title><?= $GLOBALS['site_name'] ?> | โปรไฟล์</title>
 </head>
 
 <body class="hold-transition sidebar-mini layout-fixed layout-navbar-fixed layout-footer-fixed">
@@ -31,14 +33,20 @@ $data = $conn->select_fetch('users', ['*'], ['id'], [$_SESSION['user_id']]);
                 <div class="row">
                     <div class="col-md-8">
                         <div class="card">
-                            <div class="card-header bg-danger">เปลี่ยนรหัสผ่าน</div>
+                            <div class="card-header bg-danger">โปรไฟล์</div>
                             <div class="card-body">
-                                <form method="post" id="form-password">
-                                    <input type="password" name="curent_password" placeholder="รหัสผ่านเดิม" class="form-control mb-2 rounded-0">
-                                    <input type="password" name="new_password" placeholder="รหัสผ่านใหม่" class="form-control mb-2 rounded-0">
-                                    <input type="password" name="confirm_password" placeholder="ยืนยันรหัสผ่าน" class="form-control mb-2 rounded-0">
-                                    <div class="d-flex justify-content-end">
-                                        <input type="submit" class="btn btn-secondary btn-flat" value="ส่ง">
+                                <div class="d-flex justify-content-center mb-3">
+                                    <img src="../assets/profile/<?= $data['path'] == null ? 'default.png' : $data['path'] ?>" alt="<?= $data['fullname'] ?>" style="width: 200px; height: 200px; object-fit: cover;" class="img-circle img-fluid">
+                                </div>
+                                <form method="post" id="form-profile">
+                                    <div class="form-group">
+                                        <div class="custom-file">
+                                            <input type="file" required name="file" accept="image/png, image/jpeg" class="custom-file-input" id="file">
+                                            <label class="custom-file-label" for="customFile">เลือกไฟล์</label>
+                                        </div>
+                                    </div>
+                                    <div class="text-right">
+                                        <input type="submit" class="btn btn-secondary rounded-0" value="ยืนยัน">
                                     </div>
                                 </form>
                             </div>
@@ -46,7 +54,7 @@ $data = $conn->select_fetch('users', ['*'], ['id'], [$_SESSION['user_id']]);
                     </div>
                     <div class="col-md-4">
                         <div class="card">
-                            <div class="card-header">ข้อมูลผู้ดูแล</div>
+                            <div class="card-header">ข้อมูลนักศึกษา</div>
                             <div class="card-body">
                                 <div class="text-muted">
                                     <p>ชื่อ-นามสกุล: <span class="text-dark"> <?= $data['fullname'] ?></span></p>
@@ -60,6 +68,7 @@ $data = $conn->select_fetch('users', ['*'], ['id'], [$_SESSION['user_id']]);
                             </div>
                         </div>
                     </div>
+
                 </div>
             </section>
             <!-- /.content -->
@@ -71,21 +80,29 @@ $data = $conn->select_fetch('users', ['*'], ['id'], [$_SESSION['user_id']]);
 
     <?php include './layouts/script.php' ?>
     <script>
-        $('#form-password').on('submit', function(e) {
-            e.preventDefault()
+        // file button 
+        $(function() {
+            bsCustomFileInput.init();
+        });
+    </script>
+    <script>
+        $('#form-profile').submit(e => {
+            e.preventDefault();
+            let formData = new FormData();
+            formData.append("file", $('input[type="file"]')[0].files[0]);
             $.ajax({
                 type: 'POST',
-                data: $(this).serialize(),
-                url: '../api/user/change_password.php',
+                url: '../api/user/profile.php',
+                data: formData,
+                processData: false,
+                contentType: false,
                 dataType: 'JSON',
-                success: function(res) {
-                    Toast.fire({
+                success: async function(res) {
+                    await Toast.fire({
                         icon: 'success',
                         title: res.msg
                     })
-                    setInterval(function() {
-                        window.location.reload()
-                    }, 1000)
+                    await window.location.reload()
                 },
                 error: function(xhr, status, error) {
                     let err = eval(xhr.responseJSON);
@@ -98,5 +115,6 @@ $data = $conn->select_fetch('users', ['*'], ['id'], [$_SESSION['user_id']]);
         })
     </script>
 </body>
+
 
 </html>

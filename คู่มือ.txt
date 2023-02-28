@@ -1,5 +1,5 @@
 สามารถแก้ไขการเชื่อมต่อ Database ใน api/db.php
 
-รหัสผ่านข้อมูลผู้ใช้ในฐานข้อมูล คือ password
+รหัสผ่านที่เข้ารหัสใน users คือ password
 
 เปลี่ยนรูปภาพ Site ใน assets/brand/icon.png นำรูปภาพมาวางแล้วเปลี่ยนชื่อเป็น icon.png

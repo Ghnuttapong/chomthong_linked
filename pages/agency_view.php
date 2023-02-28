@@ -2,7 +2,8 @@
 include dirname(__FILE__) . '/layouts/isadmin.php';
 include '../api/db.php';
 $conn = new db();
-$data_arr = $conn->select_all('users WHERE enabled = 0 AND role = 1', ['*'])
+$agencies_arr = $conn->select_join('users', 'agencies', ['users.*', 'agencies.*', 'users.id as user_id'], 'users.id = agencies.user_id WHERE users.enabled = 1 AND users.role = 1');
+
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -22,27 +23,23 @@ $data_arr = $conn->select_all('users WHERE enabled = 0 AND role = 1', ['*'])
         <?php include dirname(__FILE__) . '/layouts/navbar.php'; ?>
         <?php include dirname(__FILE__) . '/layouts/sidebar.php'; ?>
 
-        <!-- Content Wrapper. Contains page content -->
         <div class="content-wrapper">
-            <!-- Content Header (Page header) -->
             <div class="content-header">
                 <div class="container-fluid">
                     <div class="row mb-2">
                         <div class="col-sm-6">
                             <h1 class="m-0">หน่วยงาน</h1>
-                        </div><!-- /.col -->
+                        </div>
                         <div class="col-sm-6">
                             <ol class="breadcrumb float-sm-right">
                                 <li class="breadcrumb-item"><a href="./index.html">หน้าแรก</a></li>
                                 <li class="breadcrumb-item active">หน่วยงาน</li>
                             </ol>
-                        </div><!-- /.col -->
-                    </div><!-- /.row -->
-                </div><!-- /.container-fluid -->
+                        </div>
+                    </div>
+                </div>
             </div>
-            <!-- /.content-header -->
 
-            <!-- Main content -->
             <section class="content">
                 <div class="container-fluid">
                     <div class="card">
@@ -52,7 +49,6 @@ $data_arr = $conn->select_all('users WHERE enabled = 0 AND role = 1', ['*'])
                             </h3>
                         </div>
                         <div class="card-body">
-
                             <div id="example1_wrapper" class="dataTables_wrapper dt-bootstrap4">
                                 <div class="row">
                                     <div class="col-sm-12">
@@ -61,24 +57,29 @@ $data_arr = $conn->select_all('users WHERE enabled = 0 AND role = 1', ['*'])
                                                 <tr>
                                                     <th style="width: 10%;" class="sorting sorting_asc" tabindex="0" rowspan="1" colspan="1" aria-sort="ascending">ลำดับ</th>
                                                     <th style="width: 40%;" class="sorting" tabindex="0" rowspan="1" colspan="1">ชื่อ - นามสกุล</th>
-                                                    <th style="width: 20%;" class="sorting" tabindex="0" rowspan="1" colspan="1">รหัสนักศึกษา</th>
+                                                    <th style="width: 20%;" class="sorting" tabindex="0" rowspan="1" colspan="1">ชื่อผู้ใช้</th>
+                                                    <th style="width: 20%;" class="sorting" tabindex="0" rowspan="1" colspan="1">ชื่อหน่วยงาน</th>
+                                                    <th style="width: 20%;" class="sorting" tabindex="0" rowspan="1" colspan="1">เบอร์ติดต่อ</th>
                                                     <th style="width: 10%;" class="sorting" tabindex="0" rowspan="1" colspan="1"></th>
                                                 </tr>
                                             </thead>
                                             <tbody>
-                                                <?php if (empty($data_arr)) { ?>
+                                                <?php if (empty($agencies_arr)) { ?>
                                                     <td colspan="6" class="text-center">ไม่พบข้อมูล.</td>
                                                 <?php } else { ?>
                                                     <?php $no = 1;
-                                                    for ($i = 0; $i < count($data_arr); $i++) { ?>
+                                                    for ($i = 0; $i < count($agencies_arr); $i++) { ?>
                                                         <tr>
                                                             <td><?= $no++ ?></td>
+                                                            <td> <?= $agencies_arr[$i]['fullname'] ?> </td>
+                                                            <td> <?= $agencies_arr[$i]['username'] ?> </td>
+                                                            <td> <?= $agencies_arr[$i]['name'] ?> </td>
+                                                            <td> <?= $agencies_arr[$i]['phone'] ?> </td>
                                                             <td>
-                                                                <?= $data_arr[$i]['fullname'] ?>
-                                                            </td>
-                                                            <td> <?= $data_arr[$i]['username'] ?> </td>
-                                                            <td>
-                                                                <button onclick="approve(this)" data-id="<?= $data_arr[$i]['id'] ?>" class="btn btn-info w-100">อนุมัติ</button>
+                                                                <div class="d-flex jutify-content-between w-100">
+                                                                    <a class="btn btn-sm rounded-0 btn-info w-100" href="agency_view_single.php?id=<?= $agencies_arr[$i]['user_id'] ?>"> <i class="fas fa-eye"></i></a>
+                                                                    <button onclick="confirmDel(<?= $agencies_arr[$i]['user_id'] ?>, 'agency')" data-id="<?= $agencies_arr[$i]['user_id'] ?>" class="btn btn-sm rounded-0 btn-danger w-100"><i class="fas fa-trash-alt"></i></button>
+                                                                </div>
                                                             </td>
                                                         </tr>
                                                     <?php } ?>
@@ -99,6 +100,7 @@ $data_arr = $conn->select_all('users WHERE enabled = 0 AND role = 1', ['*'])
     </div>
     <!-- ./wrapper -->
 
+
     <?php include dirname(__FILE__) . '/layouts/script.php' ?>
     <script>
         $(document).ready(function() {
@@ -109,26 +111,42 @@ $data_arr = $conn->select_all('users WHERE enabled = 0 AND role = 1', ['*'])
             }).buttons().container().appendTo('#example1_wrapper .col-md-6:eq(0)');
         })
 
-        function approve(elm) {
-            let data = elm.dataset.id
-            $.ajax({
-                url: '../api/approve.php',
-                type: 'post',
-                dataType: 'JSON',
-                data: {
-                    id: data
-                },
-                success: function(res) {
-                    Toast.fire({
-                        icon: 'success',
-                        title: res.msg
-                    })
-                },
-                error: function(xhr, status, error) {
-                    let err = eval(xhr.responseJSON);
-                    Toast.fire({
-                        icon: 'error',
-                        title: err.msg
+
+
+        function confirmDel(id, type) {
+            Swal.fire({
+                title: 'คุณแน่ใจใช่ไหม?',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#d33',
+                cancelButtonColor: '#ccc',
+                cancelButtonText: 'ยกเลิก',
+                confirmButtonText: 'แน่นอน!'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    $.ajax({
+                        type: 'POST',
+                        data: {
+                            id,
+                            type
+                        },
+                        url: '../api/user/delete.php',
+                        dataType: 'JSON',
+                        success: async function(res) {
+                            await Swal.fire(
+                                'ลบแล้ว!',
+                                res.msg,
+                                'success'
+                            )
+                            await window.location.reload()
+                        },
+                        error: function(xhr, status, error) {
+                            let err = eval(xhr.responseJSON);
+                            Toast.fire({
+                                icon: 'error',
+                                title: err.msg
+                            })
+                        }
                     })
                 }
             })

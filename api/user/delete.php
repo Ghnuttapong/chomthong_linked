@@ -7,7 +7,11 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         $conn = new db();
 
         $result = $conn->delete_where('users', "id = $id");
-        $result = $conn->delete_where('students', "user_id = $id");
+        if(isset($_POST['type'])) {
+            $result = $conn->delete_where('agencies', "user_id = $id");
+        }else{
+            $result = $conn->delete_where('students', "user_id = $id");
+        }
 
         http_response_code(200);
         echo json_encode(['msg' => 'ข้อมูลถูกลบแล้ว.']);
