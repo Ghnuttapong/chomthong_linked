@@ -3,5 +3,3 @@ RewriteEngine On
 RewriteCond %{REQUEST_FILENAME} !-f
 RewriteRule ^([^\.]+).html$ $1.php 
 RewriteRule ^([^\.]+)$ $1.php
-RewriteRule ^pages/$ /pages/[L,R=301]
-RewriteRule ^pages/([0-9]+)/view$ pages/agency_view_single.php?id=$1
